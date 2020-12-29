@@ -1,0 +1,42 @@
+<div class="container">
+  <div class="background">
+  </div>
+  <div class="center">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="title"> 
+          <h1 id="title">News Bites <i class="far fa-newspaper"></i></h1>
+          <h2 >Categorize and Summarize Online News Articles</h2>
+        </div>
+        <div class="info">
+          <i class="fas fa-question-circle"></i>
+        </div>
+        <form [formGroup]="inputForm" class="form">
+          <div class="form-group">
+            <div class="form-group row">
+              <div class="col-sm-10">
+                <div class="input-group mb-3">
+                  <div class="input-group-prepend">
+                    <span class="input-group-text" id="addon">URL</span>
+                  </div>
+                  <input type="text" name="url" id="url" class="form-control"formControlName="url" placeholder="https://" 
+                    autofocus aria-describedby="addon">
+                </div>
+              </div>
+              <div class="col-sm-2">
+                <button type="submit" class="btn btn-primary" (click)="onSubmit()">Go <i class="fas fa-arrow-circle-right"></i></button>
+              </div>
+              <div *ngIf="inputForm.invalid && submitted" class="error">
+                <div class="error-arrow"></div>
+                <div class="error-message">
+                  <i class="fas fa-exclamation-triangle"></i>
+                  <span *ngIf="inputForm.get('url').hasError('required') && submitted">
+                    Please enter the URL of the news article.
+                  </span>
+                </div>
+              </div> 
+            </div>
+          </div>
+      </form>
+    </div>
+</div>
