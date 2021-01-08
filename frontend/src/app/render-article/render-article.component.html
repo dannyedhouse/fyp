@@ -1,1 +1,30 @@
-<p>render-article works!</p>
+<div class="container">
+  <ngb-alert #errorAlert *ngIf="errorMessage" type="danger" dismissOnTimeout="5000" (closed)="errorMessage = ''"><i class="fas fa-exclamation-triangle"></i> 
+    &nbsp;{{errorMessage}}
+  </ngb-alert>
+    <div class="spinner-border" role="status" *ngIf="loading" id="loading-spinner">
+        <span class="sr-only">Loading...</span>
+    </div>
+    <div class="row" *ngIf="!loading">
+        <i class="fas fa-arrow-circle-left" id="back-btn" (click)="returnHome()"></i>
+        <div class="summary">
+            <div class="row">
+                <div class="col-md-8" id="left">
+                    <h2>{{summary.title}}</h2>
+                    <h6 id="category">Politics</h6>
+                    <hr>
+                    <p>{{summary.summary}}</p>
+                    <div style="text-align: center;">
+                        <button type="button" class="btn btn-primary" id="summary-button" (click)="returnHome()">New Summary</button>
+                    </div>
+                </div>
+                <div class="col-md-4" id="right">
+                    <img class="img-responsive" src="{{summary.imageURL}}" width="100%" height="auto"/>
+                    <hr>
+                    <span>A 10 sentence summary generated for:<br></span>
+                    <a href="{{url}}" target="#" style="word-wrap: break-word">{{url}}</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

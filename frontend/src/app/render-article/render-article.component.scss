@@ -1,0 +1,50 @@
+#back-btn {
+    position: absolute;
+    color: #404040;
+    font-size: 20px;
+    margin: 40px 200px 10px 10px;
+    z-index: 10;
+    cursor: pointer;
+}
+
+#back-btn:hover {
+    color: #000;
+}
+
+.summary {
+    margin-top: 30px;
+    margin-bottom: 50px;
+    background-color: white;
+    box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    border: 1px solid #ccc;
+    float: left;
+    white-space: pre-line; // Breaks for '\n' - change if summary doesnt include
+}
+
+#category {
+    width: fit-content;
+    color: white;
+    background-color: #ae003a;
+    border: 0 solid transparent;
+    border-radius: 15px;
+    padding: 0 10px;
+    font-weight: 500;
+    box-shadow: 0 5px;
+}
+
+#left {
+    padding: 40px;
+}
+
+#right {
+    padding-top: 50px;
+    text-align: center;
+    background-color: #fafafa;
+}
+
+#loading-spinner {
+    top: 50%;
+    right: 50%;
+    display: block;
+    position: fixed;
+}

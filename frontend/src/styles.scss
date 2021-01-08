@@ -4,4 +4,9 @@ html, body {
     padding: 0;
     margin: 0;
     font-family: 'Open Sans', sans-serif !important;
+    background: url("assets/background-opacity.jpg") no-repeat center center fixed;
+    background-size: cover;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
 }
