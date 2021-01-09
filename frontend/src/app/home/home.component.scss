@@ -60,3 +60,29 @@
 input.ng-invalid.ng-touched {
     border: 1px solid#a94442;
 }
+
+@media only screen and (max-width: 992px) {
+    .error {
+        top: 375px;
+    }
+}
+
+@media only screen and (max-width: 576px) {
+    .error {
+        left: 200px;
+    }
+}
+
+@media only screen and (max-width: 515px) {
+    .error {
+        top: 495px;
+        left: 150px;
+    }
+}
+
+@media only screen and (max-width: 500px) {
+    .error {
+        top: 530px;
+        left: 150px;
+    }
+}
