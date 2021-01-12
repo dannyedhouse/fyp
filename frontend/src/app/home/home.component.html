@@ -1,5 +1,9 @@
+<ngb-alert id="alert" #errorAlert *ngIf="errorMessage" type="danger" dismissOnTimeout="5000" (closed)="errorMessage = ''"><i class="fas fa-exclamation-triangle"></i> 
+  &nbsp;{{errorMessage}}
+</ngb-alert>
 <div class="container">
   <div class="center">
+
     <div class="row">
       <div class="col-lg-12">
         <div class="title"> 

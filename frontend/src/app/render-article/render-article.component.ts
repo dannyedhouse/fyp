@@ -28,12 +28,21 @@ export class RenderArticleComponent implements OnInit {
   }
 
   private getSummary(url: string): void {
-    this.apiService.getSummary(url).subscribe((value: any)=>{
-      this.summary = value;
-      this.loading = false;
-    }, error => {
-      this.displayAlert("API is not currently available. Please try again later.");
-    });
+    if (this.url == null) {
+      this.displayAlert("No URL parameter specified");
+    } else {
+      this.apiService.getSummary(url).subscribe((value: any)=>{
+        if (Object.keys(value).length == 0) {
+          this.displayAlert("No results found. Please try a different URL");
+        } else {
+          this.summary = value;
+          this.loading = false;
+        }
+      }, error => {
+        console.log(error);
+        this.displayAlert("API is not currently available. Please try again later.");
+      });
+    }
   }
 
   returnHome(): void {

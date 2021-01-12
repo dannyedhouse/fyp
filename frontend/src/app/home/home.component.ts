@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { FormGroup, FormBuilder, Validators,ReactiveFormsModule } from '@angular/forms';
+import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { ApiService } from '../api.service';
 
 @Component({
   selector: 'app-home',
@@ -10,8 +11,9 @@ import { Router } from '@angular/router';
 export class HomeComponent implements OnInit {
   inputForm: FormGroup;
   submitted : boolean;
+  errorMessage = "";
 
-  constructor(private fb: FormBuilder, private router: Router) {
+  constructor(private fb: FormBuilder, private router: Router, private apiService: ApiService) {
     this.createForm();
   }
 
@@ -28,7 +30,25 @@ export class HomeComponent implements OnInit {
     this.submitted = true;
     if(this.inputForm.valid) {
       var url = this.inputForm.get('url').value;
-      this.router.navigate(['/summary'], { queryParams: {url: url}})
+      
+      this.apiService.getSummary(url).subscribe((value: any)=>{
+        if (Object.keys(value).length == 0) {
+          this.displayAlert("No results found. Please try a different URL");
+        } else {
+          this.router.navigate(['/summary'], { queryParams: {url: url}})
+        }    
+      });
     }
+  }
+
+  displayAlert(error: string): void {
+    this.errorMessage = error;
+    setTimeout(() => {
+      this.closeAlert();
+    }, 3000);
+  }
+
+  closeAlert(): void {
+    this.errorMessage = "";
   }
 }

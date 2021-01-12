@@ -1,0 +1,11 @@
+News sources to scrape - status using Newspaper library
+
+BBC News - Need to parse
+Metro - 'Advertisement', contact details
+The Guardian - Parses fine
+The Telegraph - Parses fine
+The Mirror - Newsletter sign up, image credits
+The Huffington Post - Doesn't parse
+Reuters - Photo credits
+MailOnline - 'Advertisement', Sub-headings in article
+CNN - Parses fine

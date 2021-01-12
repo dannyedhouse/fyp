@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, abort
 from flask_cors import CORS
 from getarticle import fetch_article
 
@@ -7,8 +7,11 @@ CORS(app)
 
 # Endpoint for generating a summary
 @app.route('/summary')
-def hello_world():
+def fetch_summary():
     url = request.args.get('url')
+    if url is None:
+        abort(422)
+
     summary = fetch_article(url)
     return jsonify(summary)
 

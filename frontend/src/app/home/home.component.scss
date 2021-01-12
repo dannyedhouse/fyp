@@ -61,6 +61,13 @@ input.ng-invalid.ng-touched {
     border: 1px solid#a94442;
 }
 
+#alert {
+    position: fixed !important;
+    right: 0;
+    left: 0;
+    z-index: 5;
+}
+
 @media only screen and (max-width: 992px) {
     .error {
         top: 375px;
