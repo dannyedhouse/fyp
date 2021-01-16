@@ -7,5 +7,4 @@ The Telegraph - Parses fine
 The Mirror - Newsletter sign up, image credits
 The Huffington Post - Doesn't parse
 Reuters - Photo credits
-MailOnline - 'Advertisement', Sub-headings in article
 CNN - Parses fine

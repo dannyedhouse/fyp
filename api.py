@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request, abort
 from flask_cors import CORS
-from getarticle import fetch_article
+from get_article import fetch_article
 
 app = Flask(__name__)
 CORS(app)
