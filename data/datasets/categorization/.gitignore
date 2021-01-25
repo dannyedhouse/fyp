@@ -1,0 +1,4 @@
+*
+!.gitignore
+
+# This folder needs to include the bbc news dataset (https://storage.googleapis.com/dataset-uploader/bbc/bbc-text.csv)
