@@ -3,12 +3,18 @@ import tensorflow_datasets as tfds
 import numpy as np
 import pandas as pd
 import csv
+import sys
+sys.path.append('..')
+
+from models.categorization import categorization_lstm
 from tensorflow import keras
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from nltk.corpus import stopwords
 from sklearn.preprocessing import LabelEncoder
+
 stopwords = stopwords.words('english')
+
 
 def load_dm_cnn_data():
     """TO DO"""
@@ -105,6 +111,10 @@ def preprocess_bbc(article_train, article_test, categories_train, categories_tes
     print(decoded_article)
     print("Original article: ")
     print(article_train[10])
+
+
+    #--- Pass data to model ---#
+    categorization_lstm(train_padded, test_padded, categories_test, categories_train)
 
 if __name__ == "__main__":
     load_bbc_data()
