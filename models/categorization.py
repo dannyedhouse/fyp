@@ -1,14 +1,17 @@
 import tensorflow as tf
+import numpy as np
 from tensorflow import keras
+from sklearn.preprocessing import LabelEncoder
 
 # Hyperparameters for LSTM
 input_length = 300 #length based on padding
 epochs = 5 #Repetions
 input_dim = 1000 # number of dimensions of features (top 1k words)
 output_dim = 64
+batch_size = 32
 
-def categorization_lstm(train_padded, test_padded, categories_test, categories_train):
-    """Create LTSM RNN for categorization"""
+def categorization_lstm(train_padded, test_padded, categories_test, categories_train, categories, encoder, categories_test_encoded):
+    """Create LSTM RNN for categorization"""
 
     model = tf.keras.Sequential()
 
@@ -22,6 +25,16 @@ def categorization_lstm(train_padded, test_padded, categories_test, categories_t
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
     
     history = model.fit(train_padded, categories_train, epochs=epochs, verbose=1, validation_split=0.1)
+
+    test_model = model.evaluate(test_padded, categories_test, batch_size=batch_size, verbose=1)
+    print('Accuracy: ', test_model[1])
+
+    #Make some predictions
+    for i in range(10):
+        predict = model.predict(np.array([test_padded[i]]))
+        prediction_label = categories[np.argmax(predict)]
+        print("Predicted article category:" + prediction_label)
+        print("Actual article category:" + encoder.inverse_transform(categories_test_encoded)[i])
 
 if __name__ == "__main__":
     categorization_lstm()

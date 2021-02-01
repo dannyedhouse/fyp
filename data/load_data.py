@@ -69,7 +69,7 @@ def preprocess_bbc(article_train, article_test, categories_train, categories_tes
     """Preprocess bbc data for categorization
     - Tokenize, remove stop words, add padding, encode labels
     """
-    tokenizer = Tokenizer(num_words=1000) #Top 1000 words
+    tokenizer = Tokenizer(num_words=1000) #Top 1000 words (most common)
     tokenizer.fit_on_texts(article_train)
     word_dict = tokenizer.word_index 
     print(len(word_dict))
@@ -95,12 +95,18 @@ def preprocess_bbc(article_train, article_test, categories_train, categories_tes
     encoder.fit(categories_train)
     categories_train_encoded = encoder.transform(categories_train)
     categories_test_encoded = encoder.transform(categories_test)
+    encoder_mapping = dict(zip(encoder.classes_, categories_train_encoded)) # See the index assigned each category
+    print(encoder_mapping)
+
+    #Display categories
+    categories = encoder.classes_
+    print(categories)
 
     total_categories = np.max(categories_train_encoded) + 1
     categories_train = keras.utils.to_categorical(categories_train_encoded, total_categories) # y train
     categories_test = keras.utils.to_categorical(categories_test_encoded, total_categories) # y test
 
-    print(categories_train[0])
+    print(categories_train)
     print(categories_train.shape)
     print(categories_test.shape)
 
@@ -114,7 +120,7 @@ def preprocess_bbc(article_train, article_test, categories_train, categories_tes
 
 
     #--- Pass data to model ---#
-    categorization_lstm(train_padded, test_padded, categories_test, categories_train)
+    categorization_lstm(train_padded, test_padded, categories_test, categories_train, categories, encoder, categories_test_encoded)
 
 if __name__ == "__main__":
     load_bbc_data()
