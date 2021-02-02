@@ -1,6 +1,6 @@
 News sources to scrape - status using Newspaper library
 
-BBC News - Need to parse
+BBC News - Parsed
 Metro - 'Advertisement', contact details
 The Guardian - Parses fine
 The Telegraph - Parses fine

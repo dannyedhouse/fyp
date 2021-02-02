@@ -18,8 +18,17 @@ def fetch_article(url):
     except ArticleException:
         return {}
 
+    print(article_text)
+    print("\n" + prepare_article(article_text))
+
     summary = {'title': article.title, 'category': 'politics', 'summary': article_text, 'imageURL': article.top_image}
     return summary
+
+def prepare_article(article):
+    """Prepares article for preprocessing by ensuring it is given as a single paragraph with lowercase characters."""
+
+    article = article.replace('\r', '').replace('\n', '').replace(',', ' ').replace('–', ' ').replace('“', "").replace('\'','').replace('"', '')
+    return article.lower()
 
 def parse_bbc(article):
     """Parses BBC articles"""
@@ -32,7 +41,6 @@ def parse_bbc(article):
     for div in content:
         paragraphList = div.findAll('p')
         for paragraph in paragraphList:
-            text += paragraph.get_text()
-            print(paragraph.get_text())
+            text += " " + paragraph.get_text()
 
     return text
