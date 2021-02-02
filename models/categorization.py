@@ -1,5 +1,6 @@
 import tensorflow as tf
 import numpy as np
+import os
 from tensorflow import keras
 from sklearn.preprocessing import LabelEncoder
 
@@ -35,6 +36,16 @@ def categorization_lstm(train_padded, test_padded, categories_test, categories_t
         prediction_label = categories[np.argmax(predict)]
         print("Predicted article category:" + prediction_label)
         print("Actual article category:" + encoder.inverse_transform(categories_test_encoded)[i])
+
+    #Save model to make live predictions
+    cwd = os.path.dirname(os.path.realpath(__file__))
+    os.chdir(cwd)
+
+    save_model = model.to_json()
+    with open(os.path.join(cwd, "categorization_model.json"), "w") as json_file:
+        json_file.write(save_model)
+
+    model.save_weights("weights.h5")
 
 if __name__ == "__main__":
     categorization_lstm()
