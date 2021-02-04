@@ -6,7 +6,7 @@ import csv
 import sys
 sys.path.append('..')
 
-from models.categorization import categorization_lstm
+from models.categorization import categorization_lstm, predict_article_category
 from tensorflow import keras
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
@@ -121,6 +121,21 @@ def preprocess_bbc(article_train, article_test, categories_train, categories_tes
 
     #--- Pass data to model ---#
     categorization_lstm(train_padded, test_padded, categories_test, categories_train, categories, encoder, categories_test_encoded)
+
+def preprocess_article(article_text):
+    """Handles the tokenization and padding for the article text"""
+    article = []
+    article.append(article_text)
+
+    #Tokenize
+    tokenizer = Tokenizer(num_words=1000) #Top 1000 words (most common)
+    tokenizer.fit_on_texts(article)
+    article_sequences = tokenizer.texts_to_sequences(article)
+
+    #Padding
+    article_padded = pad_sequences(sequences = article_sequences, maxlen=300)
+    print(article_padded.shape) #check shape
+    predict_article_category(article_padded)
 
 if __name__ == "__main__":
     load_bbc_data()

@@ -1,6 +1,9 @@
 from newspaper import Article, Config, ArticleException
 from newspaper.utils import BeautifulSoup
 import json
+import sys
+sys.path.append('..')
+from data.load_data import preprocess_article
 
 def fetch_article(url):
     """Fetches the article content"""
@@ -19,7 +22,9 @@ def fetch_article(url):
         return {}
 
     print(article_text)
-    print("\n" + prepare_article(article_text))
+    article_text = prepare_article(article_text)
+    print("\n" + article_text)
+    preprocess_article(article_text)
 
     summary = {'title': article.title, 'category': 'politics', 'summary': article_text, 'imageURL': article.top_image}
     return summary
@@ -27,7 +32,7 @@ def fetch_article(url):
 def prepare_article(article):
     """Prepares article for preprocessing by ensuring it is given as a single paragraph with lowercase characters."""
 
-    article = article.replace('\r', '').replace('\n', '').replace(',', ' ').replace('–', ' ').replace('“', "").replace('\'','').replace('"', '')
+    article = article.replace('\r', '').replace('\n', '').replace(',', ' ').replace('–', ' ').replace('“', "").replace('\'','').replace('"', '').replace('”','')
     return article.lower()
 
 def parse_bbc(article):
