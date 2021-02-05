@@ -12,12 +12,15 @@ export class HomeComponent implements OnInit {
   inputForm: FormGroup;
   submitted : boolean;
   errorMessage = "";
+  loading: boolean;
 
   constructor(private fb: FormBuilder, private router: Router, private apiService: ApiService) {
     this.createForm();
   }
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.loading = false;
+  }
 
   createForm() {
     const regex = /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/;
@@ -30,8 +33,9 @@ export class HomeComponent implements OnInit {
     this.submitted = true;
     if(this.inputForm.valid) {
       var url = this.inputForm.get('url').value;
-      
+      this.loading = true;
       this.apiService.getSummary(url).subscribe((value: any)=>{
+        this.loading = false;
         if (Object.keys(value).length == 0) {
           this.displayAlert("No results found. Please try a different URL");
         } else {

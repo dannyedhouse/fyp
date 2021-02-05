@@ -68,6 +68,10 @@ input.ng-invalid.ng-touched {
     z-index: 5;
 }
 
+.spinner-border-sm {
+    margin-bottom: 2px;
+}
+
 @media only screen and (max-width: 992px) {
     .error {
         top: 375px;

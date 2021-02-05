@@ -135,7 +135,7 @@ def preprocess_article(article_text):
     #Padding
     article_padded = pad_sequences(sequences = article_sequences, maxlen=300)
     print(article_padded.shape) #check shape
-    predict_article_category(article_padded)
+    return(predict_article_category(article_padded))
 
 if __name__ == "__main__":
     load_bbc_data()

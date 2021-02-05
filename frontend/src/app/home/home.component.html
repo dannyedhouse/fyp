@@ -26,7 +26,11 @@
                 </div>
               </div>
               <div class="col-sm-2">
-                <button type="button" class="btn btn-primary" (click)="onSubmit()">Go <i class="fas fa-arrow-circle-right"></i></button>
+                <button type="button" class="btn btn-primary" (click)="onSubmit()">Go 
+                  <i class="fas fa-arrow-circle-right" *ngIf="!loading"></i>
+                  <span class="spinner-border spinner-border-sm" role="status" *ngIf="loading" id="loading-spinner"></span>
+                  <span class="sr-only" *ngIf="loading">Loading...</span>
+                </button>
               </div>
               <div *ngIf="inputForm.invalid && submitted" class="error">
                 <div class="error-arrow"></div>

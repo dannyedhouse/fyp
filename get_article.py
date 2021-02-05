@@ -24,9 +24,9 @@ def fetch_article(url):
     print(article_text)
     article_text = prepare_article(article_text)
     print("\n" + article_text)
-    preprocess_article(article_text)
+    category = preprocess_article(article_text)
 
-    summary = {'title': article.title, 'category': 'politics', 'summary': article_text, 'imageURL': article.top_image}
+    summary = {'title': article.title, 'category': category, 'summary': article_text, 'imageURL': article.top_image}
     return summary
 
 def prepare_article(article):

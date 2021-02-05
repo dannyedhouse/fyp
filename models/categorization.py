@@ -66,6 +66,7 @@ def predict_article_category(article):
     categories = ['business','entertainment','politics','sport','tech']
     prediction_label = categories[np.argmax(predicted_category)]
     print("Predicted article as " + prediction_label)
+    return prediction_label.capitalize()
 
 if __name__ == "__main__":
     categorization_lstm()
