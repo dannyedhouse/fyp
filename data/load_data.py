@@ -4,9 +4,11 @@ import numpy as np
 import pandas as pd
 import csv
 import sys
+import argparse
 sys.path.append('..')
 
-from models.categorization import categorization_lstm, predict_article_category
+from models.categorization import Categorization
+from models.predict_category import predict_article_category
 from tensorflow import keras
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
@@ -14,7 +16,7 @@ from nltk.corpus import stopwords
 from sklearn.preprocessing import LabelEncoder
 
 stopwords = stopwords.words('english')
-
+num_words = 1000 #top (most common) number of words for tokenizer
 
 def load_dm_cnn_data():
     """TO DO"""
@@ -22,10 +24,13 @@ def load_dm_cnn_data():
     train_data = data['train']
     test_data = data['test']
 
-def load_bbc_data():
-    """Loads the BBC News dataset for categorization"""
-
-    training_percentage = 0.7 # Try 70/30 split
+def load_bbc_data(tune_model):
+    """Loads the BBC News dataset for categorization.
+    
+    Args:
+        tune_model: True if to run the hyperparameter tuning, otherwise generate stored model. 
+    """
+    training_percentage = 0.75 # Try 70/30 split
 
     bbc_text = pd.read_csv("datasets/categorization/bbc-text.csv")
     training_size = int(len(bbc_text) * training_percentage)
@@ -48,7 +53,7 @@ def load_bbc_data():
     print("Length of article testing data: ", len(article_test))
     print("Length of categories testing data: ", len(categories_test))
 
-    preprocess_bbc(article_train, article_test, categories_train, categories_test)
+    preprocess_bbc(article_train, article_test, categories_train, categories_test, tune_model)
 
 def remove_stop_words(article):
     """Remove stop words (using nltk corpus)"""
@@ -65,11 +70,11 @@ def decode(article, word_dict):
     
     return decoded
 
-def preprocess_bbc(article_train, article_test, categories_train, categories_test):
+def preprocess_bbc(article_train, article_test, categories_train, categories_test, tune_model):
     """Preprocess bbc data for categorization
     - Tokenize, remove stop words, add padding, encode labels
     """
-    tokenizer = Tokenizer(num_words=1000) #Top 1000 words (most common)
+    tokenizer = Tokenizer(num_words=num_words) #Top x words (most common)
     tokenizer.fit_on_texts(article_train)
     word_dict = tokenizer.word_index 
     print(len(word_dict))
@@ -120,7 +125,11 @@ def preprocess_bbc(article_train, article_test, categories_train, categories_tes
 
 
     #--- Pass data to model ---#
-    categorization_lstm(train_padded, test_padded, categories_test, categories_train, categories, encoder, categories_test_encoded)
+    model = Categorization(train_padded, test_padded, categories_test, categories_train)
+    if (tune_model):
+        model.run_tuning() #Find best HParams if --tuning parameter is passed.
+    else:
+        model.categorization_lstm(categories, encoder, categories_test_encoded)
 
 def preprocess_article(article_text):
     """Handles the tokenization and padding for the article text"""
@@ -128,7 +137,7 @@ def preprocess_article(article_text):
     article.append(article_text)
 
     #Tokenize
-    tokenizer = Tokenizer(num_words=1000) #Top 1000 words (most common)
+    tokenizer = Tokenizer(num_words=num_words) #Top 1000 words (most common)
     tokenizer.fit_on_texts(article)
     article_sequences = tokenizer.texts_to_sequences(article)
 
@@ -138,4 +147,8 @@ def preprocess_article(article_text):
     return(predict_article_category(article_padded))
 
 if __name__ == "__main__":
-    load_bbc_data()
+    parser = argparse.ArgumentParser(description="Load and preprocess BBC News data for categorization")
+    parser.add_argument('--tuning', required=False, action='store_true', help='Run hyperparameter tuning to determine best')
+    arguments = parser.parse_args()
+
+    load_bbc_data(arguments.tuning)
