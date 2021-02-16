@@ -1,5 +1,4 @@
 import tensorflow as tf
-import tensorflow_datasets as tfds
 import numpy as np
 import pandas as pd
 import csv
@@ -17,12 +16,6 @@ from sklearn.preprocessing import LabelEncoder
 
 stopwords = stopwords.words('english')
 num_words = 1000 #top (most common) number of words for tokenizer
-
-def load_dm_cnn_data():
-    """TO DO"""
-    data = tfds.load('cnn_dailymail', data_dir="~/tensorflow_datasets")
-    train_data = data['train']
-    test_data = data['test']
 
 def load_bbc_data(tune_model):
     """Loads the BBC News dataset for categorization.

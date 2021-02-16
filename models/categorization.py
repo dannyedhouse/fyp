@@ -31,6 +31,7 @@ class Categorization:
     def categorization_lstm(self, categories, encoder, categories_test_encoded):
         """Create LSTM RNN for categorization"""
 
+        print(self.train_padded[0])
         model = tf.keras.Sequential()
 
         model.add(keras.layers.Embedding(input_dim=self.input_dim, output_dim=self.output_dim, input_length=self.input_length))

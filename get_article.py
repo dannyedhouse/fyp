@@ -3,7 +3,7 @@ from newspaper.utils import BeautifulSoup
 import json
 import sys
 sys.path.append('..')
-from data.load_data import preprocess_article
+from data.load_bbc_data import preprocess_article
 
 def fetch_article(url):
     """Fetches the article content"""
