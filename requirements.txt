@@ -8,3 +8,4 @@ pandas==1.2.0
 scikit-learn==0.24.1
 matplotlib==3.3.4
 spacy==3.0.2
+ipynb-py-convert==0.4.6

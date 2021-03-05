@@ -14,11 +14,11 @@ from tensorflow import keras
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from nltk.corpus import stopwords
-from sklearn.preprocessing import LabelEncoder
-from spacy import displacy
-nlp = spacy.load('en_core_web_sm')
+from nltk.tokenize import word_tokenize
+from sklearn.feature_extraction.text import CountVectorizer
 
-max_article_len = 800
+stopwords = stopwords.words('english')
+max_article_len = 650
 max_summary_len = 55
 
 def load_dm_cnn_data():
@@ -58,9 +58,12 @@ def split_data(data):
         articles_length.append(count_words(article))
         summary_length.append(count_words(highlight))
         #named_entity_recognition(article)
+        #Remove Stopwords
+        article = clean_article(article)
+        highlight = clean_article(highlight)
 
-        articles.append(clean_article(article))
-        summary.append(clean_article(highlight))
+        articles.append(remove_stop_words(article))
+        summary.append(remove_stop_words(highlight))
 
     print("The average length is: ",np.average(articles_length))
     print("The average length is: ",np.average(summary_length))
@@ -69,11 +72,40 @@ def split_data(data):
 
 def clean_article(article):
     article = article.replace('\n', ' ').replace('(CNN)', '').replace('--', '')
+    article=re.sub(r'>',' ', article)
+    article=re.sub(r'<',' ', article)
+    article=re.sub(r'LRB',' ', article)
+    article=re.sub(r'RRB',' ', article)
+    article = re.sub(r'[" "]+', " ", article)
+    article=re.sub(r"([?!¿])", r" \1 ", article)
+    article=re.sub(r'-',' ', article)
+    article=article.replace('/',' ')
+    article=re.sub(r'\s+', ' ', article)
+    article=decontract(article)
     article = re.sub('[^A-Za-z0-9.,]+', ' ', article)
     article = re.sub(r'\s+', ' ', article)
 
     return article.lower()
 
+def decontract(phrase):
+    phrase = re.sub(r"won't", "will not", phrase)
+    phrase = re.sub(r"\'ll", " will", phrase)
+    phrase = re.sub(r"n\'t", " not", phrase)
+    phrase = re.sub(r"\'re", " are", phrase)
+    phrase = re.sub(r"\'d", " would", phrase)
+    phrase = re.sub(r"\'t", " not", phrase)
+    phrase = re.sub(r"\'ve", " have", phrase)
+    phrase = re.sub(r"can\'t", "can not", phrase)
+    phrase = re.sub(r"\'s", " is", phrase)
+    phrase = re.sub(r"\'m", " am", phrase)  
+    phase = re.sub(r"ain\'t", "is not", phrase) 
+    return phrase
+    
+def remove_stop_words(article):
+    """Remove stop words (using nltk corpus)"""
+    word_token = word_tokenize(article)
+    return ' '.join([word for word in word_token if word not in stopwords])
+    
 def count_words(article):
     """Return number of words in an article/summary"""
     split = article.split()
@@ -90,15 +122,41 @@ def named_entity_recognition(article):
     new=new.lower()
     #print(new)
 
-def preprocess_cnn_dm(train_articles, train_summary, test_articles, test_summary):
+def preprocess_cnn_dm(train_articles_all, train_summary_all, test_articles, test_summary):
     """Preprocess cnn/dm data for summarization
     - Tokenization, padding
     """
     #------------------
     # Article tokenization + padding
     #------------------
+    tokenizer = Tokenizer()
+    tokenizer.fit_on_texts(train_articles_all)
+
+    # Define rare words (below threshold) as 'ukn'
+    threshold=2
+    rare_words=[]
+    for key,value in tokenizer.word_counts.items():
+        if(value<threshold):
+            rare_words.append(key)
+    
+    print("Num of rare words for articles:", len(rare_words))
+    rare_words[:5]
+    
+    token_rare=[]
+    for i in range(len(rare_words)):
+        token_rare.append('ukn')
+    
+    rare_words_dict = dict(zip(rare_words,token_rare))
+
+    train_articles=[]
+    for i in train_articles_all:
+        for word in i.split():
+            if word.lower() in rare_words_dict:
+                i = i.replace(word, rare_words_dict[word.lower()])
+        train_articles.append(i)
+
     tokenizer = Tokenizer(oov_token='ukn')
-    tokenizer.fit_on_texts(train_articles)
+    tokenizer.fit_on_texts(list(train_articles))
 
     #Create training sequence
     train_sequences = tokenizer.texts_to_sequences(train_articles) # x train
@@ -121,8 +179,35 @@ def preprocess_cnn_dm(train_articles, train_summary, test_articles, test_summary
     #------------------
     # Summary tokenization + padding
     #------------------
-    y_tokenizer = Tokenizer(oov_token='ukn')
-    y_tokenizer.fit_on_texts(train_summary)
+    y_tokenizer = Tokenizer()
+    y_tokenizer.fit_on_texts(train_summary_all)
+    
+    # Define rare words as 'ukn'
+    threshold = 2
+    rare_words=[]
+    for key, value in y_tokenizer.word_counts.items():
+        if(value<threshold):
+            rare_words.append(key)
+    
+    rare_words[3:10]
+
+    token_rare=[]
+    for i in range(len(rare_words)):
+        token_rare.append('ukn')
+
+    rare_words_dict = dict(zip(rare_words,token_rare))
+
+    train_summary=[]
+    for i in train_summary_all:
+        for word in i.split():
+            if word.lower() in rare_words_dict:
+                i = i.replace(word, rare_words_dict[word.lower()])
+        train_summary.append(i)
+
+    print(train_summary_all[5])
+    print(train_summary[5])
+    y_tokenizer = Tokenizer(oov_token='ukn') 
+    y_tokenizer.fit_on_texts(list(train_summary))
 
     #Create training sequence
     sum_train_sequences = y_tokenizer.texts_to_sequences(train_summary) # x train
@@ -139,10 +224,41 @@ def preprocess_cnn_dm(train_articles, train_summary, test_articles, test_summary
     summary_vocab_size = len(y_tokenizer.word_index) + 1
 
     #------------------
+    # GloVe Pre-trained Word Embeddings
+    #------------------  
+    embeddings_dictionary = dict()
+    glove_embeddings = open("glove/glove.6B.50d.txt",encoding="utf8")
+
+    for line in glove_embeddings:
+        line = line.split()
+        word = line[0]
+        vector_dimensions = np.asarray(line[1:],dtype='float32')
+        embeddings_dictionary [word] = vector_dimensions
+    glove_embeddings.close()
+
+    # Embeddings for article vocab
+    embedding_matrix_x = np.zeros((article_vocab_size+1 , 50))
+    for word, index in tokenizer.word_index.items():
+        embedding_vector = embeddings_dictionary.get(word)
+        if embedding_vector is not None:
+            embedding_matrix_x[index] = embedding_vector
+
+    # Embeddings for summary vocab
+    embedding_matrix_y = np.zeros((summary_vocab_size+1, 50))
+    for word, index in y_tokenizer.word_index.items():
+        embedding_vector = embeddings_dictionary.get(word)
+        if embedding_vector is not None:
+            embedding_matrix_y[index] = embedding_vector
+
+    #------------------
     # Call summarization model
     #------------------
+    reverse_target_word_index=y_tokenizer.index_word
+    reverse_source_word_index=tokenizer.index_word
+    target_word_index=y_tokenizer.word_index
+
     model = Summarization(train_padded, test_padded, sum_train_padded, sum_test_padded, max_article_len, max_summary_len, 
-        article_vocab_size, summary_vocab_size)
+        article_vocab_size, summary_vocab_size, reverse_target_word_index, reverse_source_word_index, target_word_index, embedding_matrix_x, embedding_matrix_y, test_articles)
     model.summarization_seq2seq()
 
 if __name__ == "__main__":

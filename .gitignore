@@ -4,3 +4,4 @@ __pycache__
 *.log
 */*.h5
 logs
+data\glove
