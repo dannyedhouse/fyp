@@ -3,10 +3,10 @@ import numpy as np
 import pandas as pd
 import os
 import datetime
-import matplotlib.pyplot as plt
 from tensorflow import keras
 from sklearn.preprocessing import LabelEncoder
 from tensorboard.plugins.hparams import api as hp
+from models.eval import evaluate
 
 class Categorization:
 
@@ -51,7 +51,8 @@ class Categorization:
         history = model.fit(self.train_padded, self.categories_train, epochs=self.epochs, verbose=1, validation_split=0.1, callbacks=[tensorboard_callback])
         test_model = model.evaluate(self.test_padded, self.categories_test, batch_size=self.batch_size, verbose=1)
         print('Accuracy: ', test_model[1])
-        self.display_accuracy_graph(history)
+        evaluate.display_accuracy_graph(history)
+        evaluate.display_loss_graph(history)
 
         print(categories)
         #Make some predictions
@@ -69,15 +70,6 @@ class Categorization:
             json_file.write(save_model)
 
         model.save_weights("weights.h5")
-
-    def display_accuracy_graph(self, history):
-        """Plots a graph with the accuracy and val_accuracy to help determine best number of epochs"""
-        plt.plot(history.history["accuracy"])
-        plt.plot(history.history["val_accuracy"])
-        plt.title("Model Accuracy")
-        plt.ylabel('Accuracy')
-        plt.xlabel('Epoch')
-        plt.show()
 
     def run_tuning(self):
         """Loop through and test different HParams for the categorization model"""

@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 from tensorflow import keras
 from tensorboard.plugins.hparams import api as hp
 from models.attention import AttentionLayer
+from models.eval import evaluate
 
 class Summarization:
     """Seq2Seq Model (encoder-decoder) for summarizing the news articles"""
@@ -20,22 +21,13 @@ class Summarization:
     latent_dim = 256 #latent dimension
     dropout = 0.3
     
-    def __init__(self, train_padded, test_padded, sum_train_padded, sum_test_padded, max_article_len, max_summary_len, x_vocab, y_vocab,
-        reverse_target_word_index, reverse_source_word_index, target_word_index, embedding_matrix_x, embedding_matrix_y, test_articles):
-        self.train_padded = train_padded
-        self.test_padded = test_padded
-        self.sum_train_padded = sum_train_padded 
-        self.sum_test_padded = sum_test_padded
+    def __init__(self, max_article_len, max_summary_len, reverse_target_word_index, reverse_source_word_index, target_word_index):
         self.max_article_len = max_article_len
         self.max_summary_len = max_summary_len
-        self.x_vocab = x_vocab #Vocab length for the articles
-        self.y_vocab = y_vocab #Vocab length for the summary
         self.reverse_target_word_index = reverse_target_word_index
         self.reverse_source_word_index = reverse_source_word_index
         self.target_word_index = target_word_index
-        self.embedding_matrix_x = embedding_matrix_x
-        self.embedding_matrix_y = embedding_matrix_y
-        self.test_articles = test_articles
+        
 
     def encoder(self):
         """Encoder"""
@@ -72,8 +64,18 @@ class Summarization:
 
         return decoder_input, decoder_output, decoder_state, decoder_gru
 
-    def summarization_seq2seq(self):
+    def summarization_seq2seq(self, train_padded, test_padded, sum_train_padded, sum_test_padded, x_vocab, y_vocab, 
+            embedding_matrix_x, embedding_matrix_y, test_articles):
         """Create Seq2Seq model for summarization using encoder, attention layer and decoder"""
+        self.train_padded = train_padded
+        self.test_padded = test_padded
+        self.sum_train_padded = sum_train_padded 
+        self.sum_test_padded = sum_test_padded
+        self.x_vocab = x_vocab #Vocab length for the articles
+        self.y_vocab = y_vocab #Vocab length for the summary
+        self.embedding_matrix_x = embedding_matrix_x
+        self.embedding_matrix_y = embedding_matrix_y
+        self.test_articles = test_articles
         
         #Create embedding layers for article and summaries
         self.embedding_layer_articles = keras.layers.Embedding(self.x_vocab+1, self.embedding_dim, mask_zero=True,
@@ -113,9 +115,28 @@ class Summarization:
         history = model.fit([self.train_padded, self.sum_train_padded[:,:-1]], self.sum_train_padded[:,1:], epochs=self.epochs, batch_size=self.batch_size,
             validation_data=([self.test_padded, self.sum_test_padded[:,:-1]], self.sum_test_padded[:,1:]), workers=-1, callbacks=[es])
 
+        #Accuracy and loss
+        evaluate.display_accuracy_graph(history)
+        evaluate.display_loss_graph(history)
+
         #Get summaries
         self.infer_summary(encoder_model, decoder_model)
 
+        #---Save Models---#
+        #Encoder
+        cwd = os.path.dirname(os.path.realpath(__file__))
+        os.chdir(cwd)
+        save_model = encoder_model.to_json()
+        with open(os.path.join(cwd, "encoder_model.json"), "w") as json_file:
+            json_file.write(save_model)
+        encoder_model.save_weights("encoder_weights.h5")
+
+        cwd = os.path.dirname(os.path.realpath(__file__))
+        os.chdir(cwd)
+        save_model_decode = decoder_model.to_json()
+        with open(os.path.join(cwd, "decoder_model.json"), "w") as json_file:
+            json_file.write(save_model_decode)
+        decoder_model.save_weights("decoder_weights.h5")
 
     def decoder_inference_model(self, decoder_gru, decoder_input, decoder_dense):
         """Create decoder model for predicting summaries"""
@@ -236,3 +257,43 @@ class Summarization:
             encoder_state = decoder_state
 
         return predicted_summary
+
+    def generate_summary(self, article, article_padded):
+        """Load in summary models to generate summary"""
+        print(article_padded)
+        cwd = os.path.dirname(os.path.realpath(__file__))
+        os.chdir(cwd)
+
+        #Read in encoder model
+        encoder_model_file = open("encoder_model.json","r")
+        read_encoder_model = encoder_model_file.read()
+        encoder_model_file.close()
+
+        encoder_model = tf.keras.models.model_from_json(read_encoder_model)
+        encoder_model.load_weights("encoder_weights.h5")
+
+        #Read in decoder model
+        decoder_model_file = open("decoder_model.json","r")
+        read_decoder_model = decoder_model_file.read()
+        decoder_model_file.close()
+
+        decoder_model = tf.keras.models.model_from_json(read_decoder_model, custom_objects={'AttentionLayer': AttentionLayer})
+        decoder_model.load_weights("decoder_weights.h5")
+
+        #Generate summary
+        print("Original article:", self.sequence_to_article(article_padded[0]))
+        test_article = self.sequence_to_article(article_padded[0])
+        test_article = re.sub('[^a-z]+', ' ', test_article)
+        result = keras.preprocessing.text.text_to_word_sequence(test_article)
+
+        if self.search(result, 'ukn'):
+            index=result.index('ukn')
+    
+            input_org = re.sub('[^a-z]+',' ', article)
+            input_org = keras.preprocessing.text.text_to_word_sequence(input_org)
+            ukn_token = input_org[index]
+
+        else:
+            ukn_token='ukn'
+
+        print("Predicted summary:", self.decode_sequence(article_padded[0].reshape(1,self.max_article_len), encoder_model, decoder_model, ukn_token))

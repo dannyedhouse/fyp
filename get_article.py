@@ -4,6 +4,7 @@ import json
 import sys
 sys.path.append('..')
 from data.load_bbc_data import preprocess_article
+from data.load_cnn_data import preprocess_article_summary
 
 def fetch_article(url):
     """Fetches the article content"""
@@ -25,6 +26,7 @@ def fetch_article(url):
     article_text = prepare_article(article_text)
     print("\n" + article_text)
     category = preprocess_article(article_text)
+    summary_new = preprocess_article_summary(article_text)
 
     summary = {'title': article.title, 'category': category, 'summary': article_text, 'imageURL': article.top_image}
     return summary

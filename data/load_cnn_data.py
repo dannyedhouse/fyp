@@ -5,7 +5,9 @@ import pandas as pd
 import spacy
 import csv
 import sys
+import os
 import re
+import pickle
 import argparse
 sys.path.append('..')
 
@@ -61,7 +63,6 @@ def split_data(data):
         #Remove Stopwords
         article = clean_article(article)
         highlight = clean_article(highlight)
-
         articles.append(remove_stop_words(article))
         summary.append(remove_stop_words(highlight))
 
@@ -256,10 +257,47 @@ def preprocess_cnn_dm(train_articles_all, train_summary_all, test_articles, test
     reverse_target_word_index=y_tokenizer.index_word
     reverse_source_word_index=tokenizer.index_word
     target_word_index=y_tokenizer.word_index
+    
+    with open('tokenizer.pickle', 'wb') as handle:
+        pickle.dump(tokenizer, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    
+    with open('y_tokenizer.pickle', 'wb') as handle:
+        pickle.dump(y_tokenizer, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-    model = Summarization(train_padded, test_padded, sum_train_padded, sum_test_padded, max_article_len, max_summary_len, 
-        article_vocab_size, summary_vocab_size, reverse_target_word_index, reverse_source_word_index, target_word_index, embedding_matrix_x, embedding_matrix_y, test_articles)
-    model.summarization_seq2seq()
+    model = Summarization(max_article_len, max_summary_len, reverse_target_word_index, reverse_source_word_index, target_word_index)
+    model.summarization_seq2seq(train_padded, test_padded, sum_train_padded, sum_test_padded, article_vocab_size, summary_vocab_size, 
+        embedding_matrix_x, embedding_matrix_y, test_articles)
+
+
+def preprocess_article_summary(article_text):
+    """Preprocesses article for summarization"""
+    article = []   
+    article_text = clean_article(article_text)
+    article.append(remove_stop_words(article_text))
+
+    #Fit article to tokenizer
+    tokenizer = Tokenizer()
+    tokenizer.fit_on_texts(article)
+    article_sequences = tokenizer.texts_to_sequences(article)
+
+    article_padded = pad_sequences(sequences = article_sequences, maxlen=max_article_len, padding='post')
+
+    #Load tokenizers
+    cwd = os.path.dirname(os.path.realpath(__file__))
+    os.chdir(cwd)
+    
+    with open('tokenizer.pickle', 'rb') as handle:
+        x_tokenizer = pickle.load(handle)
+
+    with open('y_tokenizer.pickle', 'rb') as handle:
+        y_tokenizer = pickle.load(handle)
+
+    reverse_target_word_index = y_tokenizer.index_word
+    reverse_source_word_index = tokenizer.index_word
+    target_word_index = y_tokenizer.word_index
+
+    model = Summarization(max_article_len, max_summary_len, reverse_target_word_index, reverse_source_word_index, target_word_index)
+    print(model.generate_summary(article, article_padded))
 
 if __name__ == "__main__":
     load_dm_cnn_data()

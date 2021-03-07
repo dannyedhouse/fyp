@@ -4,4 +4,7 @@ __pycache__
 *.log
 */*.h5
 logs
-data\glove
+glove
+*.pickle
+decoder_model.json
+encoder_model.json
