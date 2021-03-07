@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiService } from '../api.service';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-home',
@@ -14,7 +15,7 @@ export class HomeComponent implements OnInit {
   errorMessage = "";
   loading: boolean;
 
-  constructor(private fb: FormBuilder, private router: Router, private apiService: ApiService) {
+  constructor(private fb: FormBuilder, private router: Router, private apiService: ApiService, private modalService: NgbModal) {
     this.createForm();
   }
 
@@ -54,5 +55,9 @@ export class HomeComponent implements OnInit {
 
   closeAlert(): void {
     this.errorMessage = "";
+  }
+
+  open(content: any) {
+    this.modalService.open(content)
   }
 }

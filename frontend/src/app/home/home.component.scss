@@ -72,6 +72,14 @@ input.ng-invalid.ng-touched {
     margin-bottom: 2px;
 }
 
+#help-icon {
+    cursor: pointer;
+}
+
+#help-icon:hover {
+    color: lighten($color: #000000, $amount: 30);
+}
+
 @media only screen and (max-width: 992px) {
     .error {
         top: 375px;

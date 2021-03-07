@@ -10,8 +10,8 @@
           <h1 id="title">News Bites <i class="far fa-newspaper"></i></h1>
           <h2 >Categorize and Summarize Online News Articles</h2>
         </div>
-        <div class="info"> <!--keep?-->
-          <i class="fas fa-question-circle"></i>
+        <div class="info">
+          <i (click)="open(help)" class="fas fa-question-circle" id="help-icon"></i>
         </div>
         <form [formGroup]="inputForm" class="form">
           <div class="form-group">
@@ -50,3 +50,26 @@
     </div>
   </div>
 </div>
+
+<!--Help Modal-->
+<ng-template #help let-modal let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Help</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <p>News Bites allows you to generate a summary and identify the category of an online news article, by using machine learning.</p>
+    How to use?
+    <ul>
+      <li>Simply enter the URL of a news article in the input field and press Go!</li>
+      <li>The predicted category will be shown in the top left, along with the summary generated.</li>
+    </ul>
+    <p><b>Note:</b> This has been tested with BBC News, The Guardian, Metro, The Telegraph, The Mirror, Reuters and CNN.</p>
+    <p>Other sources may not work as effectively.</p>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-light" (click)="modal.close('Save click')">Close</button>
+  </div>
+</ng-template>
