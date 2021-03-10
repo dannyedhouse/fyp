@@ -9,6 +9,8 @@ from tensorflow import keras
 from tensorboard.plugins.hparams import api as hp
 from models.attention import AttentionLayer
 from models.eval import evaluate
+from rouge import Rouge
+from nltk.translate.bleu_score import sentence_bleu
 
 class Summarization:
     """Seq2Seq Model (encoder-decoder) for summarizing the news articles"""
@@ -121,6 +123,12 @@ class Summarization:
 
         #Get summaries
         self.infer_summary(encoder_model, decoder_model)
+
+
+        #---Evaluaton---#
+        #Calculate BLEU/ROUGE
+        self.calculate_metrics(encoder_model, decoder_model)
+        
 
         #---Save Models---#
         #Encoder
@@ -257,6 +265,49 @@ class Summarization:
             encoder_state = decoder_state
 
         return predicted_summary
+
+    def calculate_metrics(self, encoder_model, decoder_model):
+        """Calculates the BLEU and Rouge metrics for evaluating the summarization"""
+        target_summaries = [] #reference
+        summaries = [] #hypothesis
+        bleu_scores = []
+        
+        for i in range(len(self.test_padded)):
+            test_article = self.sequence_to_article(self.test_padded[i])
+            test_article = re.sub('[^a-z]+', ' ', test_article)
+
+            result = keras.preprocessing.text.text_to_word_sequence(test_article)
+
+            if self.search(result, 'ukn'):
+                index=result.index('ukn')
+        
+                input_org = re.sub('[^a-z]+',' ', self.test_articles[i])
+                input_org = keras.preprocessing.text.text_to_word_sequence(input_org)
+                ukn_token = input_org[index]
+
+            else:
+                ukn_token='ukn'
+
+            target = self.sequence_to_summary(self.sum_test_padded[i])
+            actual = self.decode_sequence(self.test_padded[i].reshape(1,self.max_article_len), encoder_model, decoder_model, ukn_token)
+
+            target_summaries.append(target)
+            summaries.append(actual)
+            
+            reference = [str(target).split()]
+            candidate = str(actual).split()
+            bleu_score = sentence_bleu(reference, candidate, weights=(1,0,0,0))
+            bleu_scores.append(bleu_score)
+
+        #ROUGE
+        rouge = Rouge()
+        scores = rouge.get_scores(target_summaries, summaries, avg=True)
+        print(scores)
+
+        #BLEU
+        avg = sum(bleu_scores) / len(bleu_scores)
+        print(avg)
+
 
     def generate_summary(self, article, article_padded):
         """Load in summary models to generate summary"""
