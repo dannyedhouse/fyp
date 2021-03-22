@@ -3,8 +3,10 @@ import numpy as np
 import pandas as pd
 import os
 import datetime
+import matplotlib.pyplot as plt
 from tensorflow import keras
 from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import plot_confusion_matrix, confusion_matrix
 from tensorboard.plugins.hparams import api as hp
 from models.eval import evaluate
 
@@ -31,13 +33,12 @@ class Categorization:
     def categorization_lstm(self, categories, encoder, categories_test_encoded):
         """Create LSTM RNN for categorization"""
 
-        print(self.train_padded[0])
         model = tf.keras.Sequential()
 
         model.add(keras.layers.Embedding(input_dim=self.input_dim, output_dim=self.output_dim, input_length=self.input_length))
         model.add(keras.layers.Bidirectional(keras.layers.LSTM(64)))
         model.add(keras.layers.Dense(64, activation='relu'))
-        model.add(keras.layers.Dropout(self.dropout))
+        model.add(keras.layers.Dropout(self.dropout)) # Dropout - prevents overfitting
         model.add(keras.layers.Dense(5, activation='softmax')) # Num of categories
 
         print(model.summary()) # Show details of the model layers, shape and parameters
@@ -62,6 +63,9 @@ class Categorization:
             print("Predicted article category:" + prediction_label)
             print("Actual article category:" + encoder.inverse_transform(categories_test_encoded)[i])
 
+        #Display confusion matrix
+        self.show_confusion_matrix(model, categories)
+
         #Save model to make live predictions
         cwd = os.path.dirname(os.path.realpath(__file__))
         os.chdir(cwd)
@@ -70,6 +74,27 @@ class Categorization:
             json_file.write(save_model)
 
         model.save_weights("weights.h5")
+
+    def show_confusion_matrix(self, model, categories):
+        """Shows confusion matrix for predictions"""
+        predictions = model.predict(self.test_padded)
+        categories_test = [] #actual
+        categories_predictions = [] #predictions
+
+        for i in range(len(self.categories_test)):
+            category = self.categories_test[i]
+            index_array = np.nonzero(category)
+            encoded = index_array[0].item(0)
+            categories_test.append(encoded)
+
+        for i in range(0,len(predictions)):
+            prediction = predictions[i]
+            predicted_index = np.argmax(prediction)
+            categories_predictions.append(predicted_index)
+
+        matrix = confusion_matrix(categories_test, categories_predictions)
+        evaluate.create_confusion_matrix(matrix, classes = categories)
+        plt.show()
 
     def run_tuning(self):
         """Loop through and test different HParams for the categorization model"""

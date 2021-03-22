@@ -3,8 +3,8 @@ from newspaper.utils import BeautifulSoup
 import json
 import sys
 sys.path.append('..')
-from data.load_bbc_data import preprocess_article
-from data.load_cnn_data import preprocess_article_summary
+from data.train_bbc_data import preprocess_article_for_categorization
+from data.train_cnn_data import preprocess_article_for_summarization
 
 def fetch_article(url):
     """Fetches the article content"""
@@ -22,14 +22,12 @@ def fetch_article(url):
     except ArticleException:
         return {}
 
-    print(article_text)
     article_text = prepare_article(article_text)
-    print("\n" + article_text)
-    category = preprocess_article(article_text)
-    summary_new = preprocess_article_summary(article_text)
+    category = preprocess_article_for_categorization(article_text) # Get predicted category
+    summary = preprocess_article_for_summarization(article_text) # Get predicted summary
 
-    summary = {'title': article.title, 'category': category, 'summary': article_text, 'imageURL': article.top_image}
-    return summary
+    summarised_article = {'title': article.title, 'category': category, 'summary': article_text, 'imageURL': article.top_image}
+    return summarised_article
 
 def prepare_article(article):
     """Prepares article for preprocessing by ensuring it is given as a single paragraph with lowercase characters."""

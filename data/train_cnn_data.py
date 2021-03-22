@@ -20,7 +20,7 @@ from nltk.tokenize import word_tokenize
 from sklearn.feature_extraction.text import CountVectorizer
 
 stopwords = stopwords.words('english')
-max_article_len = 650
+max_article_len = 650 # Calculated from averages
 max_summary_len = 55
 
 def load_dm_cnn_data():
@@ -59,10 +59,12 @@ def split_data(data):
         highlight = np.array(row['highlights']).tolist().decode('utf-8')
         articles_length.append(count_words(article))
         summary_length.append(count_words(highlight))
-        #named_entity_recognition(article)
-        #Remove Stopwords
+
+        # Clean article
         article = clean_article(article)
         highlight = clean_article(highlight)
+
+        # Remove stop words
         articles.append(remove_stop_words(article))
         summary.append(remove_stop_words(highlight))
 
@@ -72,6 +74,7 @@ def split_data(data):
     return articles, summary
 
 def clean_article(article):
+    """Cleans article by replacing certain regex content in the article, and expand contractions"""
     article = article.replace('\n', ' ').replace('(CNN)', '').replace('--', '')
     article=re.sub(r'>',' ', article)
     article=re.sub(r'<',' ', article)
@@ -89,6 +92,7 @@ def clean_article(article):
     return article.lower()
 
 def decontract(phrase):
+    """Expand common contractions in the dataset"""
     phrase = re.sub(r"won't", "will not", phrase)
     phrase = re.sub(r"\'ll", " will", phrase)
     phrase = re.sub(r"n\'t", " not", phrase)
@@ -112,16 +116,6 @@ def count_words(article):
     split = article.split()
     num_words = len(split)
     return num_words
-
-def named_entity_recognition(article):
-    """Subtitute named entities (names, companies, locations etc...) with the entity category"""
-
-    #print(article)
-    #print("---")
-    ner = nlp(article)
-    new = (" ".join([t.text if not t.ent_type_ else t.ent_type_ for t in ner]))
-    new=new.lower()
-    #print(new)
 
 def preprocess_cnn_dm(train_articles_all, train_summary_all, test_articles, test_summary):
     """Preprocess cnn/dm data for summarization
@@ -268,8 +262,7 @@ def preprocess_cnn_dm(train_articles_all, train_summary_all, test_articles, test
     model.summarization_seq2seq(train_padded, test_padded, sum_train_padded, sum_test_padded, article_vocab_size, summary_vocab_size, 
         embedding_matrix_x, embedding_matrix_y, test_articles)
 
-
-def preprocess_article_summary(article_text):
+def preprocess_article_for_summarization(article_text):
     """Preprocesses article for summarization"""
     article = []   
     article_text = clean_article(article_text)
@@ -278,8 +271,35 @@ def preprocess_article_summary(article_text):
     #Fit article to tokenizer
     tokenizer = Tokenizer()
     tokenizer.fit_on_texts(article)
-    article_sequences = tokenizer.texts_to_sequences(article)
 
+    # Define rare words (below threshold) as 'ukn'
+    threshold=2
+    rare_words=[]
+    for key,value in tokenizer.word_counts.items():
+        if(value<threshold):
+            rare_words.append(key)
+    
+    print("Num of rare words for articles:", len(rare_words))
+    rare_words[:5]
+    
+    token_rare=[]
+    for i in range(len(rare_words)):
+        token_rare.append('ukn')
+    
+    rare_words_dict = dict(zip(rare_words,token_rare))
+
+    articles=[]
+    for i in article:
+        for word in i.split():
+            if word.lower() in rare_words_dict:
+                i = i.replace(word, rare_words_dict[word.lower()])
+        articles.append(i)
+
+    #Tokenizer
+    tokenizer = Tokenizer(oov_token='ukn')
+    tokenizer.fit_on_texts(list(articles))
+
+    article_sequences = tokenizer.texts_to_sequences(articles)
     article_padded = pad_sequences(sequences = article_sequences, maxlen=max_article_len, padding='post')
 
     #Load tokenizers
@@ -295,6 +315,10 @@ def preprocess_article_summary(article_text):
     reverse_target_word_index = y_tokenizer.index_word
     reverse_source_word_index = tokenizer.index_word
     target_word_index = y_tokenizer.word_index
+
+    print(len(y_tokenizer.index_word))
+    print(len(tokenizer.index_word))
+    print(len(y_tokenizer.word_index))
 
     model = Summarization(max_article_len, max_summary_len, reverse_target_word_index, reverse_source_word_index, target_word_index)
     print(model.generate_summary(article, article_padded))

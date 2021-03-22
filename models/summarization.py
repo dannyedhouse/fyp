@@ -234,7 +234,6 @@ class Summarization:
 
         # Choose 'start' as first word of target summary
         target_sequence[0, 0] = self.target_word_index['start']
-        print("Target sequence: ", target_sequence)
 
         predicted_summary = ''
         summary_generated = False
@@ -244,22 +243,27 @@ class Summarization:
 
             # Sample the next token from vocab (greedy search)
             token_index = np.argmax(token_output[0, -1, :])
-            sampled_token = self.reverse_target_word_index[token_index]
 
-            if not sampled_token == 'end':
-                if (sampled_token=='ukn'):
-                    predicted_summary += ' ' + ukn_token 
+            if not token_index == 0:
+                sampled_token = self.reverse_target_word_index[token_index]
+            
+                if not sampled_token == 'end':
+                    if (sampled_token=='ukn'):
+                        predicted_summary += ' ' + ukn_token 
                 
-                else:
-                    predicted_summary += ' ' + sampled_token
+                    else:
+                        predicted_summary += ' ' + sampled_token
 
-            # Break Condition: Reach max length of summaries or find 'end'
-            if sampled_token == 'end' or len(predicted_summary.split()) >= (self.max_summary_len - 1):
+                # Break Condition: Reach max length of summaries or find 'end'
+                if sampled_token == 'end' or len(predicted_summary.split()) >= (self.max_summary_len - 1):
+                    summary_generated = True
+
+                # Update Target Sequence (length 1).
+                target_sequence = np.zeros((1, 1))
+                target_sequence[0, 0] = token_index
+            
+            else:
                 summary_generated = True
-
-            # Update Target Sequence (length 1).
-            target_sequence = np.zeros((1, 1))
-            target_sequence[0, 0] = token_index
 
             # Update internal states
             encoder_state = decoder_state
@@ -340,7 +344,7 @@ class Summarization:
         if self.search(result, 'ukn'):
             index=result.index('ukn')
     
-            input_org = re.sub('[^a-z]+',' ', article)
+            input_org = re.sub('[^a-z]+',' ', article[0])
             input_org = keras.preprocessing.text.text_to_word_sequence(input_org)
             ukn_token = input_org[index]
 

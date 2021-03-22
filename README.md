@@ -1,4 +1,4 @@
-# News Bites - Final Year Project [WIP]
+# News Bites - Final Year Project
 
 Combining Categorization and Summarization of online news articles using NLP and Machine Learning.
 
@@ -28,3 +28,16 @@ The dataset consists of 287,000 documents with the article and highlight (target
 - Note this requries the glove.6B.50d.txt GloVe embeddings to located at */content/gdrive/MyDrive/glove/glove.6B.50d.txt*
 
 Otherwise, `py load_cnn_data.py` will load and preprocess the dataset, and train the model.
+
+#### Word Embeddings
+The summarization model uses pre-trained GloVe word embeddings, glove.6B.50d.txt (which can be downloaded from [here](https://www.kaggle.com/watts2/glove6b50dtxt)), and must be located in *data/glove*
+
+## API
+Run `api.py` in order to start the Flask API, which will be hosted at localhost.
+The endpoint **/summary** takes the parameter **url** followed by the article link to be summarized.
+- e.g. */summary?url=https://www.bbc.co.uk/news/uk-55489932*
+
+This returns the *category*, *imageURL*, *summary* and *title* of the article.
+
+## Unit Tests
+Run `python -m unittest discover test` to execute the unit tests located in the /test folder.

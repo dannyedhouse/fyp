@@ -23,17 +23,14 @@ def load_bbc_data(tune_model):
     Args:
         tune_model: True if to run the hyperparameter tuning, otherwise generate stored model. 
     """
-    training_percentage = 0.75 # Try 70/30 split
-
+    training_percentage = 0.75 # 75% used for training
     bbc_text = pd.read_csv("datasets/categorization/bbc-text.csv")
     training_size = int(len(bbc_text) * training_percentage)
 
     categories = bbc_text['category'] #Label
     text = bbc_text['text'] #Article text
 
-    print(text[10])
-    text = remove_stop_words(text)
-    print('\n', text[10])
+    text = remove_stop_words(text) #Remove stop words
 
     categories_train = categories[0: training_size]
     categories_test = categories[training_size:]
@@ -70,30 +67,24 @@ def preprocess_bbc(article_train, article_test, categories_train, categories_tes
     tokenizer = Tokenizer(num_words=num_words) #Top x words (most common)
     tokenizer.fit_on_texts(article_train)
     word_dict = tokenizer.word_index 
-    print(len(word_dict))
     
     #Create training sequence
     train_sequences = tokenizer.texts_to_sequences(article_train) # x train
-    print(train_sequences[10])
 
     #Create testing sequence
     test_sequences = tokenizer.texts_to_sequences(article_test) # x test
 
     #Padding ~ add 0s at end ('post') to make all 300
     train_padded = pad_sequences(sequences = train_sequences, maxlen=300, padding='post')
-    print(len(train_sequences[0]))
-    print(len(train_padded[0]))
-    print(train_padded[0])
-
     test_padded = pad_sequences(sequences = test_sequences, maxlen=300, padding='post')
-    print(test_padded.shape)
 
     #Encode labels (categories)
     encoder = LabelEncoder()
     encoder.fit(categories_train)
     categories_train_encoded = encoder.transform(categories_train)
     categories_test_encoded = encoder.transform(categories_test)
-    encoder_mapping = dict(zip(encoder.classes_, categories_train_encoded)) # See the index assigned each category
+
+    encoder_mapping = dict(zip(encoder.classes_, categories_train_encoded)) # See the index assigned to each category
     print(encoder_mapping)
 
     #Display categories
@@ -104,28 +95,27 @@ def preprocess_bbc(article_train, article_test, categories_train, categories_tes
     categories_train = keras.utils.to_categorical(categories_train_encoded, total_categories) # y train
     categories_test = keras.utils.to_categorical(categories_test_encoded, total_categories) # y test
 
-    print(categories_train)
+    #Print shapes of train and test data for validation
     print(categories_train.shape)
     print(categories_test.shape)
 
     #Check article after tokenize and padding, and check it before (for validation)
     decoded_article = decode(train_padded[10], word_dict)
-
     print("Tokenized and padded article: ")
     print(decoded_article)
+    print("---")
     print("Original article: ")
     print(article_train[10])
 
-
-    #--- Pass data to model ---#
+    #--- Pass data to Categorization model ---#
     model = Categorization(train_padded, test_padded, categories_test, categories_train)
     if (tune_model):
-        model.run_tuning() #Find best HParams if --tuning parameter is passed.
+        model.run_tuning() # Find best HParams if '--tuning' parameter is passed.
     else:
         model.categorization_lstm(categories, encoder, categories_test_encoded)
 
-def preprocess_article(article_text):
-    """Handles the tokenization and padding for the article text"""
+def preprocess_article_for_categorization(article_text):
+    """Handles the tokenization and padding of article text for categorization"""
     article = []
     article.append(article_text)
 
@@ -136,7 +126,7 @@ def preprocess_article(article_text):
 
     #Padding
     article_padded = pad_sequences(sequences = article_sequences, maxlen=300)
-    print(article_padded.shape) #check shape
+    print(article_padded.shape) # Check shape
     return(predict_article_category(article_padded))
 
 if __name__ == "__main__":
