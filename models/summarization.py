@@ -351,4 +351,6 @@ class Summarization:
         else:
             ukn_token='ukn'
 
-        print("Predicted summary:", self.decode_sequence(article_padded[0].reshape(1,self.max_article_len), encoder_model, decoder_model, ukn_token))
+        generated_summary = self.decode_sequence(article_padded[0].reshape(1,self.max_article_len), encoder_model, decoder_model, ukn_token)
+        print("Predicted summary:", generated_summary)
+        return generated_summary

@@ -26,7 +26,7 @@ def fetch_article(url):
     category = preprocess_article_for_categorization(article_text) # Get predicted category
     summary = preprocess_article_for_summarization(article_text) # Get predicted summary
 
-    summarised_article = {'title': article.title, 'category': category, 'summary': article_text, 'imageURL': article.top_image}
+    summarised_article = {'title': article.title, 'category': category, 'summary': summary, 'imageURL': article.top_image, 'article': article.text}
     return summarised_article
 
 def prepare_article(article):

@@ -321,7 +321,7 @@ def preprocess_article_for_summarization(article_text):
     print(len(y_tokenizer.word_index))
 
     model = Summarization(max_article_len, max_summary_len, reverse_target_word_index, reverse_source_word_index, target_word_index)
-    print(model.generate_summary(article, article_padded))
+    return model.generate_summary(article, article_padded)
 
 if __name__ == "__main__":
     load_dm_cnn_data()

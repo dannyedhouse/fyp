@@ -16,6 +16,7 @@ export class RenderArticleComponent implements OnInit {
   url: string;
   summary: any;
   loading: boolean;
+  open = false;
   errorMessage = "";
 
   ngOnInit(): void {
