@@ -18,7 +18,7 @@ This must be downloaded (e.g. from [here](https://storage.googleapis.com/dataset
 
 `py train_bbc_data.py` - Load and preprocess BBC News dataset, train the Categorization model and save the model as a .json file, with the weights as a HDF file to be loaded in later.
 
-`py load_bbc_data.py --tuning` - Run experiments with different hyperparameters (HParam) to determine best for Categorization model.  Then run `tensorboard --logdir="logs/"` to  view the accuracy results of the different parameters.
+`py train_bbc_data.py --tuning` - Run experiments with different hyperparameters (HParam) to determine best for Categorization model.  Then run `tensorboard --logdir="logs/"` to  view the accuracy results of the different parameters.
 
 ## Summarization
 
