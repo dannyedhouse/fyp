@@ -33,7 +33,7 @@ def fetch_article(url):
 def prepare_article(article):
     """Prepares article for preprocessing by ensuring it is given as a single paragraph with lowercase characters."""
 
-    article = article.replace('\r', '').replace('\n', '').replace(',', ' ').replace('–', ' ').replace('“', "").replace('\'','').replace('"', '').replace('”','')
+    article = article.replace('\r', '').replace('\n', '').replace(',', ' ').replace('–', ' ').replace('“', "").replace('\'','').replace('"', '').replace('”','').replace('\n\n', '')
     return article.lower()
 
 def parse_bbc(article):
@@ -47,6 +47,6 @@ def parse_bbc(article):
     for div in content:
         paragraphList = div.findAll('p')
         for paragraph in paragraphList:
-            text += " " + paragraph.get_text() + "\n"
+            text += " " + paragraph.get_text() + "\n\n"
 
     return text
