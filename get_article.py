@@ -21,12 +21,13 @@ def fetch_article(url):
 
     except ArticleException:
         return {}
-
+    
+    original_text = article_text
     article_text = prepare_article(article_text)
     category = preprocess_article_for_categorization(article_text) # Get predicted category
     summary = preprocess_article_for_summarization(article_text) # Get predicted summary
 
-    summarised_article = {'title': article.title, 'category': category, 'summary': summary, 'imageURL': article.top_image, 'article': article.text}
+    summarised_article = {'title': article.title, 'category': category, 'summary': summary, 'imageURL': article.top_image, 'article': original_text}
     return summarised_article
 
 def prepare_article(article):
@@ -46,6 +47,6 @@ def parse_bbc(article):
     for div in content:
         paragraphList = div.findAll('p')
         for paragraph in paragraphList:
-            text += " " + paragraph.get_text()
+            text += " " + paragraph.get_text() + "\n"
 
     return text
