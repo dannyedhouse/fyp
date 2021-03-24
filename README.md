@@ -16,7 +16,7 @@ The categorization model uses the BBC News classification dataset (csv) of 2,225
 
 This must be downloaded (e.g. from [here](https://storage.googleapis.com/dataset-uploader/bbc/bbc-text.csv)) and placed into the *data/datasets/categorization* folder
 
-`py load_bbc_data.py` - Load and preprocess BBC News dataset, train the Categorization model and save the model as a .json file, with the weights as a HDF file to be loaded in later.
+`py train_bbc_data.py` - Load and preprocess BBC News dataset, train the Categorization model and save the model as a .json file, with the weights as a HDF file to be loaded in later.
 
 `py load_bbc_data.py --tuning` - Run experiments with different hyperparameters (HParam) to determine best for Categorization model.  Then run `tensorboard --logdir="logs/"` to  view the accuracy results of the different parameters.
 
@@ -27,7 +27,7 @@ The summarization model uses the CNN/DailyMail dataset, which is loaded in using
 The dataset consists of 287,000 documents with the article and highlight (target summary). As such, it can take a while to train the model, therefore the *summarization_model.ipynb* Jupyter Notebook file may be run using Google colab with a GPU to increase training performance.
 - Note this requries the glove.6B.50d.txt GloVe embeddings to located at */content/gdrive/MyDrive/glove/glove.6B.50d.txt*
 
-Otherwise, `py load_cnn_data.py` will load and preprocess the dataset, and train the model.
+Otherwise, `py train_cnn_data.py` will load and preprocess the dataset, and train the model.
 
 #### Word Embeddings
 The summarization model uses pre-trained GloVe word embeddings, glove.6B.50d.txt (which can be downloaded from [here](https://www.kaggle.com/watts2/glove6b50dtxt)), and must be located in *data/glove*

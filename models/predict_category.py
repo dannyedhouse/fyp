@@ -19,7 +19,7 @@ def predict_article_category(article):
     #Make prediction
     predicted_category = categorization_model.predict(article)
 
-    categories = ['business','entertainment','politics','sport','tech']
+    categories = ['business','entertainment','tech','sport','politics']
     prediction_label = categories[np.argmax(predicted_category)]
     print("Predicted article as " + prediction_label)
     return prediction_label.capitalize()
