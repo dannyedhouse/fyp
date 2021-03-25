@@ -150,6 +150,15 @@ def preprocess_cnn_dm(train_articles_all, train_summary_all, test_articles, test
                 i = i.replace(word, rare_words_dict[word.lower()])
         train_articles.append(i)
 
+    # Use category top words
+    with open("top_category_words.txt", "rb") as load_words:
+        top_words = pickle.load(load_words)
+
+    for i in train_articles:
+        for word in i.split():
+            if word.lower() in top_words:
+                train_articles.append(word) #Duplicate important word
+
     tokenizer = Tokenizer(oov_token='ukn')
     tokenizer.fit_on_texts(list(train_articles))
 

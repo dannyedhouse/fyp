@@ -8,3 +8,4 @@ glove
 *.pickle
 decoder_model.json
 encoder_model.json
+top_category_words.txt

@@ -4,6 +4,7 @@ import pandas as pd
 import csv
 import sys
 import argparse
+import nltk
 sys.path.append('..')
 
 from models.categorization import Categorization
@@ -13,6 +14,7 @@ from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from nltk.corpus import stopwords
 from sklearn.preprocessing import LabelEncoder
+import pickle
 
 stopwords = stopwords.words('english')
 num_words = 1000 #top (most common) number of words for tokenizer
@@ -26,6 +28,9 @@ def load_bbc_data(tune_model):
     training_percentage = 0.75 # 75% used for training
     bbc_text = pd.read_csv("datasets/categorization/bbc-text.csv")
     training_size = int(len(bbc_text) * training_percentage)
+
+    #Get top words
+    get_top_words(bbc_text)
 
     categories = bbc_text['category'] #Label
     text = bbc_text['text'] #Article text
@@ -59,6 +64,22 @@ def decode(article, word_dict):
         decoded += " " + get_word_dict.get(i, 'x') # put 'x' if word cant be found in index, i.e. not in top 1000 words
     
     return decoded
+
+def get_top_words(bbc_data):
+    """Get top 20 words for each category, used to help with summarization task"""
+
+    top_words = []
+    
+    bbc_data = bbc_data.apply(lambda x: [item for item in x if item not in stopwords])
+    top_word = bbc_data.groupby('category')['text'].apply(lambda x: nltk.FreqDist(nltk.tokenize.word_tokenize(' '.join(x)))) #Group words by category
+    print(top_word)
+
+    top_words = top_word.head(20).agg({'a':lambda x: list(x)}) #Top 20 words
+    for word in top_words:
+        top_words.append(top_words)
+    
+    with open("top_category_words.txt", "wb") as save: #Save the top words, to be read in by summary model
+        pickle.dump(top_words, save)
 
 def preprocess_bbc(article_train, article_test, categories_train, categories_test, tune_model):
     """Preprocess bbc data for categorization
